@@ -12,10 +12,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document("orders")
 public class Order {
     @Id
-    private int id;
+    private long id;
     private double longitude;
     private double latitude;
     private double subtotal;
+    private String wellnessType;
     /**
      * Unix timestamp (milliseconds)
      */
