@@ -1,4 +1,4 @@
-package ua.nure.kz.instantwellnesskitsbackend;
+package ua.trinity.instantwellnesskits.backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

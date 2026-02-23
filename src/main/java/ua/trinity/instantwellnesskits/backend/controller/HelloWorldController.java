@@ -1,4 +1,4 @@
-package ua.nure.kz.instantwellnesskitsbackend.controller;
+package ua.trinity.instantwellnesskits.backend.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
