@@ -1,4 +1,4 @@
-package ua.trinity.instantwellnesskits.backend.entity.tax;
+package ua.trinity.iwk.backend.tax.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

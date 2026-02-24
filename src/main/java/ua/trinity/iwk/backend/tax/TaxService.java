@@ -1,8 +1,7 @@
-package ua.trinity.instantwellnesskits.backend.tax;
+package ua.trinity.iwk.backend.tax;
 
-import org.springframework.stereotype.Service;
-import ua.trinity.instantwellnesskits.backend.entity.Order;
-import ua.trinity.instantwellnesskits.backend.entity.tax.TaxDetails;
+import ua.trinity.iwk.backend.tax.entity.Order;
+import ua.trinity.iwk.backend.tax.entity.TaxDetails;
 
 import java.math.BigDecimal;
 

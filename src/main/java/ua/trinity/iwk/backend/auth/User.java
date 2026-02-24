@@ -1,4 +1,4 @@
-package ua.trinity.instantwellnesskits.backend.entity;
+package ua.trinity.iwk.backend.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
