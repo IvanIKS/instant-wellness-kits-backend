@@ -1,4 +1,4 @@
-package ua.trinity.instantwellnesskits.backend;
+package ua.trinity.iwk.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

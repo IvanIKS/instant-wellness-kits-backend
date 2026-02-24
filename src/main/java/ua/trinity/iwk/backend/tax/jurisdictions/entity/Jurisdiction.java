@@ -1,0 +1,19 @@
+package ua.trinity.iwk.backend.tax.jurisdictions.entity;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class Jurisdiction {
+
+    private String id;
+    private String name;
+    private String code;
+
+    private Breakdown breakdown;
+}

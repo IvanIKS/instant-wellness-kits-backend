@@ -1,4 +1,4 @@
-package ua.trinity.instantwellnesskits.backend;
+package ua.trinity.iwk.backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
