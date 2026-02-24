@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import ua.trinity.instantwellnesskits.backend.entity.tax.TaxDetails;
 
 @AllArgsConstructor
 @Getter
@@ -21,4 +22,6 @@ public class Order {
      * Unix timestamp (milliseconds)
      */
     private long timestamp;
+
+    private TaxDetails taxDetails;
 }
