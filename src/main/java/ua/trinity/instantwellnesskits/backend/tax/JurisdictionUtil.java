@@ -1,6 +1,6 @@
 package ua.trinity.instantwellnesskits.backend.tax;
 
-import ua.trinity.instantwellnesskits.backend.entity.tax.Jurisdiction;
+import ua.trinity.iwk.backend.tax.entity.Jurisdiction;
 
 public interface JurisdictionUtil {
 
