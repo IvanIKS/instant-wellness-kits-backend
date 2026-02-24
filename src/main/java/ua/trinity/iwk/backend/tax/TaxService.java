@@ -1,7 +1,8 @@
 package ua.trinity.iwk.backend.tax;
 
-import ua.trinity.iwk.backend.tax.entity.Order;
-import ua.trinity.iwk.backend.tax.entity.TaxDetails;
+import ua.trinity.iwk.backend.tax.order.Order;
+import ua.trinity.iwk.backend.tax.order.TaxDetails;
+import ua.trinity.iwk.backend.tax.jurisdictions.JurisdictionUtil;
 
 import java.math.BigDecimal;
 

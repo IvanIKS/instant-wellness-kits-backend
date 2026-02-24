@@ -1,4 +1,4 @@
-package ua.trinity.iwk.backend.tax.entity;
+package ua.trinity.iwk.backend.tax.jurisdictions.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
