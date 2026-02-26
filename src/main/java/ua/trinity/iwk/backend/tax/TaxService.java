@@ -1,5 +1,6 @@
 package ua.trinity.iwk.backend.tax;
 
+import ua.trinity.iwk.backend.tax.jurisdictions.JurisdictionNotFoundException;
 import ua.trinity.iwk.backend.tax.order.Order;
 import ua.trinity.iwk.backend.tax.order.TaxDetails;
 import ua.trinity.iwk.backend.tax.jurisdictions.JurisdictionUtil;
@@ -15,7 +16,7 @@ public class TaxService {
         this.jurisdictionUtil = jurisdictionUtil;
     }
 
-    public Order calculateTax(Order order) {
+    public Order calculateTax(Order order) throws JurisdictionNotFoundException {
         var taxJurisdiction = jurisdictionUtil
                 .getJurisdiction(order.getLatitude(), order.getLongitude());
         var breakdown = taxJurisdiction.getBreakdown();
@@ -33,5 +34,4 @@ public class TaxService {
         order.setTaxDetails(taxDetails);
         return order;
     }
-
 }
