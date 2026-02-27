@@ -63,7 +63,7 @@ public class JurisdictionImportService {
 
     private BigDecimal parsePercent(String percentStr) {
         String clean = percentStr.replace("%", "").trim();
-        return new BigDecimal(clean);
+        return new BigDecimal(clean).divide(BigDecimal.valueOf(100));
     }
 }
 
