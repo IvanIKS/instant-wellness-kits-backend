@@ -1,10 +1,9 @@
-package ua.trinity.iwk.backend.tax.jurisdictions;
+package ua.trinity.iwk.backend.tax.jurisdictions.util;
 
 import jakarta.annotation.PostConstruct;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -13,7 +12,8 @@ import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ua.trinity.iwk.backend.tax.JurisdictionRepository;
+import ua.trinity.iwk.backend.tax.jurisdictions.JurisdictionNotFoundException;
+import ua.trinity.iwk.backend.tax.jurisdictions.JurisdictionRepository;
 import ua.trinity.iwk.backend.tax.jurisdictions.entity.Jurisdiction;
 
 import java.nio.file.Files;

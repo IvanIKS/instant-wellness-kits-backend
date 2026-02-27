@@ -1,4 +1,4 @@
-package ua.trinity.iwk.backend.tax;
+package ua.trinity.iwk.backend.tax.jurisdictions;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;

@@ -1,13 +1,13 @@
-package ua.trinity.iwk.backend.tax;
+package ua.trinity.iwk.backend.tax.jurisdictions.ingestion;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import ua.trinity.iwk.backend.tax.jurisdictions.JurisdictionRepository;
 import ua.trinity.iwk.backend.tax.jurisdictions.entity.Breakdown;
 import ua.trinity.iwk.backend.tax.jurisdictions.entity.Jurisdiction;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -16,7 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class TaxImportService {
+public class JurisdictionImportService {
     private final JurisdictionRepository repository;
 
     public void importFromCsv(MultipartFile file) {

@@ -1,4 +1,4 @@
-package ua.trinity.iwk.backend.tax.jurisdictions;
+package ua.trinity.iwk.backend.tax.jurisdictions.ingestion;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -8,14 +8,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import ua.trinity.iwk.backend.tax.TaxImportService;
 
 @RestController
 @RequestMapping("/api/jurisdictions")
 @RequiredArgsConstructor
 public class JurisdictionImportController {
 
-    private final TaxImportService importService;
+    private final JurisdictionImportService importService;
 
     @PostMapping("/import")
     public ResponseEntity<String> uploadCsv(@RequestParam("file") MultipartFile file) {
