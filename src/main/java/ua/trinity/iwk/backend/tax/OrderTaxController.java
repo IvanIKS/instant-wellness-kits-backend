@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.web.bind.annotation.GetMapping;
+
 import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
@@ -15,11 +17,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/orders")
 public class OrderTaxController {
-    private TaxService taxService;
+    private final TaxService taxService;
+    private final StatsService statsService;
 
     @Autowired
-    public OrderTaxController(TaxService taxService) {
+    public OrderTaxController(TaxService taxService, StatsService statsService) {
         this.taxService = taxService;
+        this.statsService = statsService;
     }
 
     public record ImportResponse(
@@ -41,5 +45,10 @@ public class OrderTaxController {
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<StatsService.OrderStats> getStats() {
+        return ResponseEntity.ok(statsService.getStats());
     }
 }
