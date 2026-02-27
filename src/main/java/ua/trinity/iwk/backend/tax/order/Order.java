@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 @Document("orders")
 public class Order {
     @Id
-    private long id;
+    private String id;
     private double longitude;
     private double latitude;
     private double subtotal;

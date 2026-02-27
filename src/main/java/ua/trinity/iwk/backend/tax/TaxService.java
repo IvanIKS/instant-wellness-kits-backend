@@ -26,7 +26,7 @@ public class TaxService {
     private final MongoTemplate mongoTemplate;
     private static final Logger log = LoggerFactory.getLogger(TaxService.class);
 
-    public record UnsupportedOrder(long id, double longitude, double latitude, String timestamp, double subtotal, String reason) {}
+    public record UnsupportedOrder(String id, double longitude, double latitude, String timestamp, double subtotal, String reason) {}
 
     public record ImportResult(byte[] resultCsv, List<UnsupportedOrder> unsupportedOrders, int importedCount) {}
 
@@ -112,7 +112,7 @@ public class TaxService {
 
     private Order mapRecordToOrder(CSVRecord record) {
         Order order = new Order();
-        order.setId(Long.parseLong(record.get("id")));
+        order.setId(record.get("id"));
         order.setLongitude(Double.parseDouble(record.get("longitude")));
         order.setLatitude(Double.parseDouble(record.get("latitude")));
         order.setTimestamp(record.get("timestamp"));

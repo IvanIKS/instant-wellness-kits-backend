@@ -7,8 +7,8 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import java.util.Optional;
 
 @RepositoryRestResource(path = "orders")
-public interface OrderRepository extends PagingAndSortingRepository<Order, Long>, MongoRepository<Order, Long> {
-    Optional<Order> findById(long id);
+public interface OrderRepository extends PagingAndSortingRepository<Order, String>, MongoRepository<Order, String> {
+    Optional<Order> findById(String id);
 
     Optional<Order> findByTaxDetailsJurisdictionName(String jurisdictionName);
 }
