@@ -26,6 +26,10 @@ public class TaxService {
     private final MongoTemplate mongoTemplate;
     private static final Logger log = LoggerFactory.getLogger(TaxService.class);
 
+    public record UnsupportedOrder(long id, double longitude, double latitude, String timestamp, double subtotal, String reason) {}
+
+    public record ImportResult(byte[] resultCsv, List<UnsupportedOrder> unsupportedOrders, int importedCount) {}
+
     @Autowired
     public TaxService(JurisdictionUtil jurisdictionUtil, MongoTemplate mongoTemplate) {
         this.jurisdictionUtil = jurisdictionUtil;
@@ -50,7 +54,7 @@ public class TaxService {
         order.setTaxDetails(taxDetails);
     }
 
-    public byte[] process(InputStream inputStream) throws IOException {
+    public ImportResult process(InputStream inputStream) throws IOException {
         try (
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                 StringWriter stringWriter = new StringWriter()
@@ -60,15 +64,15 @@ public class TaxService {
                     .parse(reader);
 
             List<Order> batch = new ArrayList<>(BATCH_SIZE);
+            List<UnsupportedOrder> unsupported = new ArrayList<>();
 
             stringWriter.write("id,longitude,latitude,timestamp,subtotal,tax,total\n");
 
             for (CSVRecord record : parser) {
                 Order order = mapRecordToOrder(record);
 
-                boolean taxFound = tryFindTax(order);
-
-                if (taxFound) {
+                try {
+                    findTax(order);
                     batch.add(order);
 
                     stringWriter.write(order.getId() + "," +
@@ -83,6 +87,17 @@ public class TaxService {
                         bulkInsert(batch);
                         batch.clear();
                     }
+                } catch (JurisdictionNotFoundException e) {
+                    log.warn("Jurisdiction not supported for order id={} lat={} lon={}",
+                            order.getId(), order.getLatitude(), order.getLongitude());
+                    unsupported.add(new UnsupportedOrder(
+                            order.getId(),
+                            order.getLongitude(),
+                            order.getLatitude(),
+                            order.getTimestamp(),
+                            order.getSubtotal(),
+                            e.getMessage()
+                    ));
                 }
             }
 
@@ -90,7 +105,8 @@ public class TaxService {
                 bulkInsert(batch);
             }
 
-            return stringWriter.toString().getBytes();
+            int importedCount = (int) (parser.getRecordNumber() - unsupported.size());
+            return new ImportResult(stringWriter.toString().getBytes(), unsupported, importedCount);
         }
     }
 
@@ -114,18 +130,6 @@ public class TaxService {
         } catch (Exception e) {
             log.error("Failed to bulk insert batch of {} orders: {}", batch.size(), e.getMessage(), e);
             throw e;
-        }
-    }
-
-    private boolean tryFindTax(Order order) {
-        try {
-            findTax(order);
-            return true;
-        } catch (JurisdictionNotFoundException e) {
-            log.warn("Jurisdiction not supported for order with lat {} lon {}",
-                    order.getLatitude(),
-                    order.getLongitude());
-            return false;
         }
     }
 
