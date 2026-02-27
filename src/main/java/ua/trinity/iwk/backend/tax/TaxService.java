@@ -3,14 +3,11 @@ package ua.trinity.iwk.backend.tax;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import ua.trinity.iwk.backend.tax.jurisdictions.JurisdictionNotFoundException;
-import ua.trinity.iwk.backend.tax.jurisdictions.entity.Jurisdiction;
 import ua.trinity.iwk.backend.tax.order.Order;
 import ua.trinity.iwk.backend.tax.order.TaxDetails;
 import ua.trinity.iwk.backend.tax.jurisdictions.util.JurisdictionUtil;
@@ -19,7 +16,6 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +25,10 @@ public class TaxService {
     private static final int BATCH_SIZE = 1000;
     private final MongoTemplate mongoTemplate;
     private static final Logger log = LoggerFactory.getLogger(TaxService.class);
+
+    public record UnsupportedOrder(String id, double longitude, double latitude, String timestamp, double subtotal, String reason) {}
+
+    public record ImportResult(byte[] resultCsv, List<UnsupportedOrder> unsupportedOrders, int importedCount) {}
 
     @Autowired
     public TaxService(JurisdictionUtil jurisdictionUtil, MongoTemplate mongoTemplate) {
@@ -54,90 +54,82 @@ public class TaxService {
         order.setTaxDetails(taxDetails);
     }
 
-    public @Nullable StreamingResponseBody process(InputStream inputStream) {
-        return outputStream -> {
+    public ImportResult process(InputStream inputStream) throws IOException {
+        try (
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                StringWriter stringWriter = new StringWriter()
+        ) {
+            CSVParser parser = CSVFormat.DEFAULT
+                    .withFirstRecordAsHeader()
+                    .parse(reader);
 
-            try (
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))
-            ) {
+            List<Order> batch = new ArrayList<>(BATCH_SIZE);
+            List<UnsupportedOrder> unsupported = new ArrayList<>();
 
-                CSVParser parser = CSVFormat.DEFAULT
-                        .withFirstRecordAsHeader()
-                        .parse(reader);
+            stringWriter.write("id,longitude,latitude,timestamp,subtotal,tax,total\n");
 
-                List<Order> batch = new ArrayList<>(BATCH_SIZE);
-                BulkOperations bulkOps =
-                        mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, Order.class);
+            for (CSVRecord record : parser) {
+                Order order = mapRecordToOrder(record);
 
-                writer.write("id,longitude,latitude,timestamp,subtotal,tax,total\n");
+                try {
+                    findTax(order);
+                    batch.add(order);
 
-                for (CSVRecord record : parser) {
+                    stringWriter.write(order.getId() + "," +
+                            order.getLongitude() + "," +
+                            order.getLatitude() + "," +
+                            order.getTimestamp() + "," +
+                            order.getSubtotal() + "," +
+                            order.getTaxDetails().getTaxAmount() + "," +
+                            order.getTotal() + "\n");
 
-                    Order order = mapRecordToOrder(record);
-
-                    boolean taxFound
-                            = tryFindTax(order);
-
-                    if (taxFound) {
-                        batch.add(order);
-
-                        writer.write(order.getId() + "," +
-                                order.getLongitude() + "," +
-                                order.getLatitude() + "," +
-                                order.getTimestamp() + "," +
-                                order.getSubtotal() + "," +
-                                order.getTaxDetails().getTaxAmount() + "," +
-                                order.getTotal() + "\n");
-
-                        if (batch.size() >= BATCH_SIZE) {
-                            bulkInsert(batch, bulkOps);
-                            batch.clear();
-                        }
+                    if (batch.size() >= BATCH_SIZE) {
+                        bulkInsert(batch);
+                        batch.clear();
                     }
+                } catch (JurisdictionNotFoundException e) {
+                    log.warn("Jurisdiction not supported for order id={} lat={} lon={}",
+                            order.getId(), order.getLatitude(), order.getLongitude());
+                    unsupported.add(new UnsupportedOrder(
+                            order.getId(),
+                            order.getLongitude(),
+                            order.getLatitude(),
+                            order.getTimestamp(),
+                            order.getSubtotal(),
+                            e.getMessage()
+                    ));
                 }
-
-                if (!batch.isEmpty()) {
-                    bulkInsert(batch, bulkOps);
-                }
-
-                writer.flush();
-
-            } catch (Exception e) {
-                throw new RuntimeException(e);
             }
-        };
+
+            if (!batch.isEmpty()) {
+                bulkInsert(batch);
+            }
+
+            int importedCount = (int) (parser.getRecordNumber() - unsupported.size());
+            return new ImportResult(stringWriter.toString().getBytes(), unsupported, importedCount);
+        }
     }
 
     private Order mapRecordToOrder(CSVRecord record) {
-
         Order order = new Order();
-
-        order.setId(Long.parseLong(record.get("id")));
+        order.setId(record.get("id"));
         order.setLongitude(Double.parseDouble(record.get("longitude")));
         order.setLatitude(Double.parseDouble(record.get("latitude")));
-        order.setTimestamp(
-                Long.parseLong((record.get("timestamp"))));
-        order.setSubtotal(
-                Double.parseDouble(record.get("subtotal")));
-
+        order.setTimestamp(record.get("timestamp"));
+        order.setSubtotal(Double.parseDouble(record.get("subtotal")));
         return order;
     }
 
-    private void bulkInsert(List<Order> batch, BulkOperations bulkOps) {
-        bulkOps.insert(batch);
-        bulkOps.execute();
-    }
-
-    private boolean tryFindTax(Order order) {
+    private void bulkInsert(List<Order> batch) {
         try {
-            findTax(order);
-            return true;
-        } catch (JurisdictionNotFoundException e) {
-            log.warn("Jurisdiction not supported for order with lat {} lon {}",
-                    order.getLatitude(),
-                    order.getLongitude());
-            return false;
+            BulkOperations bulkOps =
+                    mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, Order.class);
+            bulkOps.insert(new ArrayList<>(batch));
+            bulkOps.execute();
+            log.info("Inserted batch of {} orders", batch.size());
+        } catch (Exception e) {
+            log.error("Failed to bulk insert batch of {} orders: {}", batch.size(), e.getMessage(), e);
+            throw e;
         }
     }
 

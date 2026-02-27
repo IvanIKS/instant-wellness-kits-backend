@@ -1,29 +1,54 @@
 package ua.trinity.iwk.backend.tax;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.io.IOException;
+import java.util.Base64;
+import java.util.List;
 
 @RestController
+@RequestMapping("/orders")
 public class OrderTaxController {
-    private TaxService taxService;
+    private final TaxService taxService;
+    private final StatsService statsService;
 
     @Autowired
-    public OrderTaxController(TaxService taxService) {
+    public OrderTaxController(TaxService taxService, StatsService statsService) {
         this.taxService = taxService;
+        this.statsService = statsService;
     }
 
-    @PostMapping("/orders/import")
-    public ResponseEntity<StreamingResponseBody> importOrders(@RequestParam MultipartFile file) throws IOException {
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=result.csv")
-                .body(taxService.process(file.getInputStream()));
+    public record ImportResponse(
+            int importedCount,
+            int unsupportedCount,
+            List<TaxService.UnsupportedOrder> unsupportedOrders,
+            String resultCsv
+    ) {}
+
+    @PostMapping("/import")
+    public ResponseEntity<ImportResponse> importOrders(@RequestParam MultipartFile file) throws IOException {
+        TaxService.ImportResult result = taxService.process(file.getInputStream());
+
+        ImportResponse response = new ImportResponse(
+                result.importedCount(),
+                result.unsupportedOrders().size(),
+                result.unsupportedOrders(),
+                Base64.getEncoder().encodeToString(result.resultCsv())
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<StatsService.OrderStats> getStats() {
+        return ResponseEntity.ok(statsService.getStats());
     }
 }
