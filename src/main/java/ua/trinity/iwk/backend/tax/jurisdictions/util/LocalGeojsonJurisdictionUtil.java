@@ -65,14 +65,14 @@ public class LocalGeojsonJurisdictionUtil implements JurisdictionUtil {
     public Jurisdiction getJurisdiction(double latitude, double longitude) throws JurisdictionNotFoundException {
         JSONObject jurisdictionRaw = getJurisdictionFromZones(latitude, longitude);
         if (jurisdictionRaw == null) {
-            throw new JurisdictionNotFoundException(String.format("Our program doesn't currently have a jurisdiction %s, %s"));
+            throw new JurisdictionNotFoundException(String.format("Our program doesn't currently have a jurisdiction %s, %s", latitude, longitude));
         }
 
         String jurisdictionName = jurisdictionRaw.get("NAME").toString();
 
         Optional<Jurisdiction> taxJurisdiction = jurisdictionRepository.findByName(jurisdictionName);
         if (taxJurisdiction.isEmpty()) {
-            throw new JurisdictionNotFoundException(String.format("Our database doesn't currently have a jurisdiction %s, %s"));
+            throw new JurisdictionNotFoundException(String.format("Our database doesn't currently have a jurisdiction %s, %s", latitude, longitude));
         }
         return taxJurisdiction.get();
     }

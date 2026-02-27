@@ -22,9 +22,9 @@ public class Order {
     private double subtotal;
     private String wellnessType;
     /**
-     * Unix timestamp (milliseconds)
+     * Timestamp from the CSV (e.g. "2025-11-04 10:17:04.915257248")
      */
-    private long timestamp;
+    private String timestamp;
 
     private TaxDetails taxDetails;
 
