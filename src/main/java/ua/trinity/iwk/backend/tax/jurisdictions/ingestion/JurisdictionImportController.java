@@ -3,6 +3,7 @@ package ua.trinity.iwk.backend.tax.jurisdictions.ingestion;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,5 +33,11 @@ public class JurisdictionImportController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to process the CSV file: " + e.getMessage());
         }
+    }
+
+    @DeleteMapping("/all")
+    public ResponseEntity<String> deleteAll() {
+        importService.deleteAll();
+        return ResponseEntity.ok("All jurisdictions deleted.");
     }
 }
