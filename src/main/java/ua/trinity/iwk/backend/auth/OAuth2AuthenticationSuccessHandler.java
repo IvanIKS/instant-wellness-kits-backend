@@ -3,6 +3,7 @@ package ua.trinity.iwk.backend.auth;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -14,7 +15,8 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
-    private static final String FRONTEND_REDIRECT_URL = "https://wellness-kit-frontend.vercel.app/login";
+    @Value("${frontend.url}")
+    private String FRONTEND_REDIRECT_URL;
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
@@ -31,7 +33,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
         String token = jwtService.generateToken(user);
 
-        String redirectUrl = FRONTEND_REDIRECT_URL + "?token=" + token;
+        String redirectUrl = FRONTEND_REDIRECT_URL + "/login?token=" + token;
         response.sendRedirect(redirectUrl);
     }
 }
