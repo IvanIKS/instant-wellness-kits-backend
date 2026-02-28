@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 @Service
 public class TaxService {
     private final JurisdictionUtil jurisdictionUtil;
-    private static final int BATCH_SIZE = 1000;
+    private static final int BATCH_SIZE = 200;
     private final MongoTemplate mongoTemplate;
     private static final Logger log = LoggerFactory.getLogger(TaxService.class);
 
