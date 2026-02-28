@@ -4,8 +4,10 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.ReplaceOptions;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import ua.trinity.iwk.backend.tax.jurisdictions.JurisdictionNotFoundException;
 import ua.trinity.iwk.backend.tax.order.Order;
@@ -22,7 +24,7 @@ import org.slf4j.LoggerFactory;
 @Service
 public class TaxService {
     private final JurisdictionUtil jurisdictionUtil;
-    private static final int BATCH_SIZE = 200;
+    private static final int BATCH_SIZE = 50;
     private final MongoTemplate mongoTemplate;
     private static final Logger log = LoggerFactory.getLogger(TaxService.class);
 
@@ -84,7 +86,7 @@ public class TaxService {
                             order.getTotal() + "\n");
 
                     if (batch.size() >= BATCH_SIZE) {
-                        bulkInsert(batch);
+                        bulkUpsert(batch);
                         batch.clear();
                     }
                 } catch (JurisdictionNotFoundException e) {
@@ -102,7 +104,7 @@ public class TaxService {
             }
 
             if (!batch.isEmpty()) {
-                bulkInsert(batch);
+                bulkUpsert(batch);
             }
 
             int importedCount = (int) (parser.getRecordNumber() - unsupported.size());
@@ -120,15 +122,15 @@ public class TaxService {
         return order;
     }
 
-    private void bulkInsert(List<Order> batch) {
+    private void bulkUpsert(List<Order> batch) {
         try {
-            BulkOperations bulkOps =
-                    mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, Order.class);
-            bulkOps.insert(new ArrayList<>(batch));
-            bulkOps.execute();
-            log.info("Inserted batch of {} orders", batch.size());
+            for (Order order : batch) {
+                Query query = new Query(Criteria.where("_id").is(order.getId()));
+                mongoTemplate.replace(query, order, ReplaceOptions.replaceOptions().upsert());
+            }
+            log.info("Upserted batch of {} orders", batch.size());
         } catch (Exception e) {
-            log.error("Failed to bulk insert batch of {} orders: {}", batch.size(), e.getMessage(), e);
+            log.error("Failed to bulk upsert batch of {} orders: {}", batch.size(), e.getMessage(), e);
             throw e;
         }
     }
