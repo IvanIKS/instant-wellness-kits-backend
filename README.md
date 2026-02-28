@@ -48,6 +48,7 @@ $env:MONGODB_URI="mongodb+srv://user:pass@cluster.mongodb.net/iwk"
 $env:GOOGLE_CLIENT_ID="your-client-id"
 $env:GOOGLE_CLIENT_SECRET="your-client-secret"
 $env:KEYSTORE_PASSWORD="your-keystore-password"
+$env:FRONTEND_URL="http://localhost:5173"
 ```
 
 **Linux / macOS:**
@@ -56,6 +57,7 @@ export MONGODB_URI="mongodb+srv://user:pass@cluster.mongodb.net/iwk"
 export GOOGLE_CLIENT_ID="your-client-id"
 export GOOGLE_CLIENT_SECRET="your-client-secret"
 export KEYSTORE_PASSWORD="your-keystore-password"
+export FRONTEND_URL="http://localhost:5173"
 ```
 
 **.env file (IntelliJ Run Configuration):**  
