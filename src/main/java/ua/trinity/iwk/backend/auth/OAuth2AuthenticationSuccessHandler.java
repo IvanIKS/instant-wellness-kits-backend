@@ -14,7 +14,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
-    private static final String FRONTEND_REDIRECT_URL = "https://wellness-kit-frontend.vercel.app/oauth2/google";
+    private static final String FRONTEND_REDIRECT_URL = "https://wellness-kit-frontend.vercel.app/login";
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
